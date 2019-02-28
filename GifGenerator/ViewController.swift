@@ -7,22 +7,28 @@
 //
 
 import UIKit
+import PhotosUI
+import MobileCoreServices
 
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate,  PHLivePhotoViewDelegate{
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-
-    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var vLive: UIView!
     let imagePicker = UIImagePickerController()
+    var livePhoto = PHLivePhotoView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        imagePicker.delegate = self
+        
     }
     @IBAction func btnLoadImagePressed(_ sender: Any) {
-        imagePicker.allowsEditing = false
+        livePhoto.removeFromSuperview()
+        
         imagePicker.sourceType = .photoLibrary
+        imagePicker.allowsEditing = false
+        imagePicker.delegate = self
+        imagePicker.mediaTypes = [kUTTypeImage, kUTTypeLivePhoto] as [String]
         
         present(imagePicker, animated: true, completion: nil)
     }
@@ -30,11 +36,19 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBAction func btnConvertImagePressed(_ sender: Any) {
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         // ----
-        if let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
-            imageView.contentMode = .scaleAspectFill
-            imageView.image = pickedImage
+        if let pickedImage = info[UIImagePickerController.InfoKey.livePhoto] as? PHLivePhoto {
+            
+            
+            livePhoto = PHLivePhotoView(frame: CGRect(x: 0, y: 0, width: vLive.frame.width, height: vLive.frame.height))
+            livePhoto.livePhoto = pickedImage
+            livePhoto.contentMode = .scaleAspectFill
+            livePhoto.startPlayback(with: .hint)
+            
+            vLive.addSubview(livePhoto)
+            vLive.sendSubviewToBack(livePhoto)
+            
         }
         
         dismiss(animated: true, completion: nil)
@@ -42,6 +56,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
+    }
+    
+    func livePhotoView(_ livePhotoView: PHLivePhotoView, didEndPlaybackWith playbackStyle: PHLivePhotoViewPlaybackStyle) {
+        // ----
+    }
+    
+    func livePhotoView(_ livePhotoView: PHLivePhotoView, willBeginPlaybackWith playbackStyle: PHLivePhotoViewPlaybackStyle) {
+        // ---
     }
     
 }
